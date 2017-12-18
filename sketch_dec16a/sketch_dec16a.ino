@@ -1,8 +1,47 @@
 const byte SW = 8;    //按鈕位於Pin8
 const byte LED = 12;  //led位於Pin
 bool lastState=false,toggle=false; //彈跳狀態
-bool code[6];  // 摩斯密碼陣列
 bool checked = false; // 是否已解碼
+int code[5] = {3,3,3,3,3};  // 已得摩斯密碼陣列
+int code_table[36][5] ={
+  0,1,3,3,3, //A
+  1,0,0,0,3, //B
+  1,0,1,0,3, //C
+  1,0,0,3,3, //D
+  0,3,3,3,3, //E
+  0,0,1,0,3, //F
+  1,1,0,3,3, //G
+  0,0,0,0,3, //H
+  0,0,3,3,3, //I
+  0,1,1,1,3, //J
+  1,0,1,3,3, //K
+  0,1,0,0,3, //L
+  1,1,3,3,3, //M
+  1,0,3,3,3, //N
+  1,1,1,3,3, //O
+  0,1,1,0,3, //P
+  1,1,0,1,3, //Q
+  0,1,0,3,3, //R
+  0,0,0,3,3, //S
+  1,3,3,3,3, //T
+  0,0,1,3,3, //U
+  0,0,0,1,3, //V
+  0,1,1,3,3, //W
+  1,0,0,1,3, //X
+  1,0,1,1,3, //Y
+  1,1,0,0,3, //Z
+  0,1,1,1,1, //1
+  0,0,1,1,1, //2
+  0,0,0,1,1, //3
+  0,0,0,0,1, //4
+  0,0,0,0,0, //5
+  1,0,0,0,0, //6
+  1,1,0,0,0, //7
+  1,1,1,0,0, //8
+  1,1,1,1,0, //9
+  1,1,1,1,1, //0
+};
+char code_chtable[36] ={'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','1','2','3','4','5','6','7','8','9','0'};
 int count  = 0;  // 彈跳計數器
 int n=0; // arrary index
 double timer =0,spacetimer = 0; // 間隔時間，空白時間
@@ -38,7 +77,7 @@ void loop()  {
       digitalWrite(LED,toggle);
       Serial.print(timer);
       
-      if(timer<=100){  //持續時間小於100ms為Dot else為Dash
+      if(timer<=100 && n<6){  //持續時間小於100ms為Dot else為Dash
         code[n++]=0;
         Serial.println(" Dot");}
       else{
@@ -54,11 +93,34 @@ void loop()  {
       if(spacetimer>2.5 && checked){
       //解碼
       Serial.print("解碼");
-      checked=false;
+      n=0;
+      for(int x=0;x<36;x++){
+        for(int y=0;y<5;y++){
+          if(code[y]!=code_table[x][y])
+            break;
+          if(code[y]==code_table[x][y])
+            n++;
+        }
+        if(n==5){
+          n=x;
+          break;
+        }
+        else{
+          n=0;
+        }
+      }
+      Serial.print(code_chtable[n]);
+      for(int i=0;i<5;i++){
+        Serial.print(code[i]);
+        code[i]=3;
+      }
       //解碼
+      n=0;
+      checked=false;
       }
      }
      if(spacetimer>10000){  //避免spacetimer溢出
       spacetimer = 4;
      }
 }
+
