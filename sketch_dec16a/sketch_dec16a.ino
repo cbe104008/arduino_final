@@ -1,9 +1,9 @@
-const byte SW = 8;    //按鈕位於Pin8
-const byte LED = 12;  //led位於Pin
-bool lastState=false,toggle=false; //彈跳狀態
+  const byte SW = 8;    //按鈕位於Pin8
+const byte LED = 13;  //led位於Pin
+bool lastState=false; //彈跳狀態
 bool checked = false; // 是否已解碼
-int code[5] = {3,3,3,3,3};  // 已得摩斯密碼陣列
-int code_table[36][5] ={  //摩斯密碼表 0=DOT 2=DASH 3=空值
+byte code[5] = {3,3,3,3,3};  // 已得摩斯密碼陣列
+const byte code_table[36][5] ={  //摩斯密碼表 0=DOT 2=DASH 3=空值
   0,1,3,3,3, //A
   1,0,0,0,3, //B
   1,0,1,0,3, //C
@@ -41,9 +41,9 @@ int code_table[36][5] ={  //摩斯密碼表 0=DOT 2=DASH 3=空值
   1,1,1,1,0, //9
   1,1,1,1,1, //0
 };
-char code_chtable[36] ={'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','1','2','3','4','5','6','7','8','9','0'}; //密碼to字元轉換
-int count  = 0;  // 彈跳計數器
-int n=0; // arrary index
+const char code_chtable[37] ={'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','1','2','3','4','5','6','7','8','9','0',' '}; //密碼to字元轉換
+byte count  = 0;  // 彈跳計數器
+byte n=0; // arrary index
 double timer =0,spacetimer = 0; // 間隔時間，空白時間
 
 void setup() {
@@ -53,6 +53,9 @@ void setup() {
 }
 void loop()  {
     boolean  b1 = digitalRead(SW);
+    
+    digitalWrite(LED,b1);//配合開關亮暗以便  之後光敏電阻判斷
+    
     if (b1 != lastState){    // 判斷按鈕彈跳
         delay(20);
         boolean b2 = digitalRead(SW);
@@ -61,7 +64,7 @@ void loop()  {
             count ++;
             if(count==1){
               checked=true;
-              Serial.println(spacetimer);
+              //Serial.println(spacetimer);
             }
         }
      }
@@ -71,29 +74,47 @@ void loop()  {
      }
      
      if(count==2){   // 完成一次按放動作
-      count = 0;  
-      toggle = !toggle;
-      digitalWrite(LED,toggle);
-      Serial.print(timer);
+        count = 0;  
+        //Serial.print(timer);
       
-      if(timer<=100 && n<6){  //持續時間小於100ms為Dot else為Dash
-        code[n++]=0;
-        Serial.println(" Dot");
-      }
-      else{
-        code[n++]=1;
-        Serial.println(" Dash");
-      }
-      timer = 0;
-      spacetimer=0;
+        if(timer<=100 && n<6){  //持續時間小於100ms為Dot else為Dash
+            code[n++]=0;
+            Serial.println(" Dot");
+        }
+        else{
+            code[n++]=1;
+            Serial.println(" Dash");
+        }
+        
+        timer = 0;
+        spacetimer=0;
      }
      
      if(count == 0){  // 無動作的空白時間
-      spacetimer+= 0.0001;
-      
-      if(spacetimer>2.5 && checked){
-      //解碼
-      Serial.println("解碼");
+          spacetimer += 0.0001;
+          
+          if(spacetimer>2.5 && checked){ //無動作一段時間後判定為單字
+              //解碼
+              Serial.print("decode :  ");
+              Serial.println( morse_decode() );  //印出密碼的對應字元
+              for(int i=0;i<5;i++){  //將讀取密碼陣列回初始值
+                  code[i]=3;
+              }
+          
+              //解碼
+              n=0;
+              checked=false;
+          }
+     }
+     
+     
+     if(spacetimer>10000){  //避免spacetimer溢出
+        spacetimer = 4;
+     }
+}
+
+char morse_decode() //解碼function
+{
       n=0;
       for(int x=0;x<36;x++){  //搜尋密碼表
         for(int y=0;y<5;y++){
@@ -103,27 +124,11 @@ void loop()  {
             n++;
         }
         if(n==5){  //假設五個密碼都對應成功及找到該字元 跳出迴圈
-          n=x;
-          break;
-        }
-        else{
           n=0;
+          return code_chtable[x];
         }
+        n=0;
       }
-      
-      Serial.print(code_chtable[n]);  //印出密碼的對應字元
-      
-      for(int i=0;i<5;i++){  //將讀取密碼陣列回初始值
-        Serial.print(code[i]);
-        code[i]=3;
-      }
-      //解碼
-      n=0;
-      checked=false;
-      }
-     }
-     if(spacetimer>10000){  //避免spacetimer溢出
-      spacetimer = 4;
-     }
+      return code_chtable[36];
 }
 
