@@ -3,7 +3,7 @@ const byte LED = 12;  //led位於Pin
 bool lastState=false,toggle=false; //彈跳狀態
 bool checked = false; // 是否已解碼
 int code[5] = {3,3,3,3,3};  // 已得摩斯密碼陣列
-int code_table[36][5] ={
+int code_table[36][5] ={  //摩斯密碼表 0=DOT 2=DASH 3=空值
   0,1,3,3,3, //A
   1,0,0,0,3, //B
   1,0,1,0,3, //C
@@ -41,7 +41,7 @@ int code_table[36][5] ={
   1,1,1,1,0, //9
   1,1,1,1,1, //0
 };
-char code_chtable[36] ={'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','1','2','3','4','5','6','7','8','9','0'};
+char code_chtable[36] ={'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','1','2','3','4','5','6','7','8','9','0'}; //密碼to字元轉換
 int count  = 0;  // 彈跳計數器
 int n=0; // arrary index
 double timer =0,spacetimer = 0; // 間隔時間，空白時間
@@ -63,10 +63,9 @@ void loop()  {
               checked=true;
               Serial.println(spacetimer);
             }
-              
-              
         }
      }
+     
      if(count == 1){  // 計算按鈕按下的持續時間
       timer = timer + 0.01;  
      }
@@ -79,29 +78,31 @@ void loop()  {
       
       if(timer<=100 && n<6){  //持續時間小於100ms為Dot else為Dash
         code[n++]=0;
-        Serial.println(" Dot");}
+        Serial.println(" Dot");
+      }
       else{
         code[n++]=1;
-        Serial.println(" Dash");}
-        
+        Serial.println(" Dash");
+      }
       timer = 0;
       spacetimer=0;
      }
      
      if(count == 0){  // 無動作的空白時間
       spacetimer+= 0.0001;
+      
       if(spacetimer>2.5 && checked){
       //解碼
-      Serial.print("解碼");
+      Serial.println("解碼");
       n=0;
-      for(int x=0;x<36;x++){
+      for(int x=0;x<36;x++){  //搜尋密碼表
         for(int y=0;y<5;y++){
-          if(code[y]!=code_table[x][y])
+          if(code[y]!=code_table[x][y])  //有不相同就跳下一個字元
             break;
-          if(code[y]==code_table[x][y])
+          if(code[y]==code_table[x][y])  //對應密碼成功則n+1;
             n++;
         }
-        if(n==5){
+        if(n==5){  //假設五個密碼都對應成功及找到該字元 跳出迴圈
           n=x;
           break;
         }
@@ -109,8 +110,10 @@ void loop()  {
           n=0;
         }
       }
-      Serial.print(code_chtable[n]);
-      for(int i=0;i<5;i++){
+      
+      Serial.print(code_chtable[n]);  //印出密碼的對應字元
+      
+      for(int i=0;i<5;i++){  //將讀取密碼陣列回初始值
         Serial.print(code[i]);
         code[i]=3;
       }
