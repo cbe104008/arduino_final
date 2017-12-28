@@ -73,6 +73,7 @@ void loop()  {
             count ++;
             if(count==1){
               checked=true;
+              tone(speakerPin,1000);
               //Serial.println(spacetimer);
             }
         }
@@ -81,7 +82,8 @@ void loop()  {
       timer = timer + 0.01;  
      }
      if(count==2){   // 完成一次按放動作
-        count = 0;  
+        noTone(speakerPin);
+        count = 0;
         //Serial.print(timer);
         if(timer<=100 && n<5){  //持續時間小於100ms為Dot else為Dash
             code[n]=0;
