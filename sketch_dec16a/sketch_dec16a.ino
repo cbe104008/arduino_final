@@ -2,6 +2,7 @@
 #include "song.h"
 const byte speakerPin=8;
   const byte SW = 10;    //按鈕位於Pin10
+  const byte sw_stop=13;   //暫停按鈕位於pin13
 const byte LED = 9;  //led位於Pin
 bool lastState=false; //彈跳狀態
 bool checked = false; // 是否已解碼
@@ -59,6 +60,7 @@ LiquidCrystal lcd(12, 11, 5, 4, 3, 1);
 void setup() {
   pinMode(SW,INPUT);
   pinMode(LED,OUTPUT);
+  pinMode(sw_stop,INPUT);
   //Serial.begin(9600);
   lcd.begin(16,2);
 }
@@ -110,17 +112,21 @@ void loop()  {
           
           if(spacetimer>2.5 && checked){ //無動作一段時間後判定為單字
               //解碼
+              checked=false;
               Serial.print("decode :  ");
               char ch = morse_decode();
+              if(ch==0) //清空
+                lcd.clear();
+              else{//顯示
               msg[decon-1] = ch;
-              lcd.print( ch );
+              lcd.print( ch );}
               for(int i=0;i<5;i++){  //將讀取密碼陣列回初始值
                   code[i]=3;
               }
           
               //解碼
               n=0;
-              checked=false;
+              
           }
      }
      
@@ -150,15 +156,15 @@ char morse_decode() //解碼function
           if(x==36)
           {
             lcd.setCursor(0,0);
-            lcd.print("                 ");
             decon = 0;
-            break;
+            return 0;
           }
           else if(x==37)
           {
             play_music();
-            lcd.clear();
-            break;
+            lcd.setCursor(0,0);
+            decon = 0;
+            return 0;
           }
           n=0;
           return code_chtable[x];
@@ -207,7 +213,7 @@ void loop_play(int tempo, char *notes, float *beats,int length)
 {
     digitalWrite(LED,HIGH);
     for (int i = 0; i < length; i++) {
-        if(digitalRead(SW))
+        if(digitalRead(sw_stop))
           break;
         // 如果是空白的話，不撥放音樂
       if (notes[i] == ' ') {
