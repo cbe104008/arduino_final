@@ -56,15 +56,15 @@ const byte code_table[39][5] ={  //摩斯密碼表 0=DOT 2=DASH 3=空值
   1,1,1,0,0, //8
   1,1,1,1,0, //9
   1,1,1,1,1, //0
-  1,1,1,1,3,
-  0,0,1,1,3,
-  1,1,1,0,3,
+  1,1,1,1,3,//flush clear
+  0,0,1,1,3,//play music
+  1,1,1,0,3,//send msg to wifi
 };
 const char code_chtable[37] ={'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','1','2','3','4','5','6','7','8','9','0',' '}; //密碼to字元轉換
 char msg[16]={'0'};
-const char music[4][7]={"SPR","MX","SEE"};
+const char music[4][7]={"SPR","MX","SEE"}; //望春風 聖誕結 好久不見
 byte count  = 0;  // 彈跳計數器
-byte n=0,decon=0; // arrary index
+byte n=0,decon=0; // arrary index n為dash-dot decon為msg用
 double timer =0,spacetimer = 0; // 間隔時間，空白時間
 LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
 
@@ -89,13 +89,13 @@ void loop()  {
     digitalWrite(LED,b1);//配合開關亮暗以便  之後光敏電阻判斷
     if (b1 != lastState){    // 判斷按鈕彈跳 
         delay(20);
-        boolean b2 = digitalRead(SW);
-        if  (b1 == b2){
+        boolean a = digitalRead(SW);
+        if  (b1 == a){
             lastState = b1;
             count ++;
             if(count==1){
-              checked=true;
-              tone(speakerPin,1000);
+              checked=true; //將解碼器開啟
+              tone(speakerPin,1000);//播放bebe聲
               //Serial.println(spacetimer);
             }
         }
@@ -123,8 +123,8 @@ void loop()  {
             n++;
         }
         
-        timer = 0;
-        spacetimer=0;
+        timer = 0;   //dash-dot計時器歸零
+        spacetimer=0; //間格計時器 歸零
      }
      
      if(count == 0){  // 無動作的空白時間
@@ -132,21 +132,21 @@ void loop()  {
           
           if(spacetimer>2.5 && checked){ //無動作一段時間後判定為單字
               //解碼
-              checked=false;
-              Serial.print("decode :  ");
+              checked=false;    //防止解碼後的空白動作繼續解碼
+              Serial.print("decode :  "); 
               char ch = morse_decode();
               if(ch==0) //清空
                 lcd.clear();
-              else{//顯示
-              msg[decon-1] = ch;
-              lcd.print( ch );
-              Serial.println(ch);
+              else{     //顯示
+                msg[decon-1] = ch;
+                lcd.print( ch );
+                Serial.println(ch);
               }
               for(int i=0;i<5;i++){  //將讀取密碼陣列回初始值
                   code[i]=3;
               }
           
-              //解碼
+              //解碼後
               n=0;
               
           }
@@ -161,11 +161,11 @@ void loop()  {
 char morse_decode() //解碼function
 {
       lcd.setCursor(0,1);
-      lcd.print("                 ");
+      lcd.print("                 "); //將第二層清除
       lcd.setCursor(decon++,0);
-      if(decon == 16)
+      if(decon == 16) //避免超出LCD長度
         decon = 0;
-      n=0;
+      n=0; //二次使用變數n 計算對應程度
       byte x;
       for(x=0;x<=38;x++){  //搜尋密碼表
         for(byte y=0;y<5;y++){
@@ -175,20 +175,22 @@ char morse_decode() //解碼function
             n++;
         }
         if(n==5){  //假設五個密碼都對應成功及找到該字元 跳出迴圈
-          if(x==36)
+          if(x==36) //清空指令
           {
             lcd.setCursor(0,0);
             decon = 0;
+            msg[0]='\0';
             return 0;
           }
-          else if(x==37)
+          else if(x==37) //播放音樂指令
           {
             play_music();
             lcd.setCursor(0,0);
             decon = 0;
+            msg[0]='\0';
             return 0;
           }
-          else if(x==38)
+          else if(x==38) //送出訊息指令
           {
             digitalWrite(ledPin,HIGH);
             String str="";
@@ -203,16 +205,16 @@ char morse_decode() //解碼function
             return 0;
           }
           n=0;
-          return code_chtable[x];
+          return code_chtable[x]; //回傳解碼字元
         }
         n=0;
       }
-      return code_chtable[36];
+      return code_chtable[36]; //無此字元 則回傳space
 }
 void play_music()
 {
   byte play_number=9;
-  for(byte i=0;i<3;i++)
+  for(byte i=0;i<3;i++) //辨識要撥放哪首音樂
   {
     byte n=0;
     for(byte j=0;j < strlen(music[i]); j++)
@@ -225,7 +227,7 @@ void play_music()
       break;
     }
   }
-  if(play_number == 0)
+  if(play_number == 0) //播放對應音樂
   {
     int length = sizeof(spring_notes);
     loop_play(500,spring_notes,spring_beats,length);
