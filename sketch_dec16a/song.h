@@ -1,6 +1,7 @@
 
 /*望春風*/
-  const char spring_notes[]="ddeg\
+const char spring_notes[]={};
+ /* const char spring_notes[]="ddeg\
 agab\
 Dbbag\
 a\
@@ -15,9 +16,9 @@ D\
 DDEDb\
 bage\
 dbba\
-g";
+g";*/
   const float spring_beats[]={
-  1.5,0.5,1,1,
+ /* 1.5,0.5,1,1,
   1,0.5,0.5,2,
   1.5,0.5,0.5,0.5,1,
   4,
@@ -32,7 +33,7 @@ g";
   1.5,0.5,1,0.5,0.5,
   1,0.5,0.5,2,
   1.5,0.5,1,1,
-  4
+  4*/
 };
 /*聖誕結*/
 const char mx_notes[]="egegDE\
@@ -56,7 +57,8 @@ const float mx_beats[]={
 1.5,1,1,
 };
 /*好久不見*/
-const char t_notes[]="  E\
+const char t_notes[]={};
+/*const char t_notes[]="  E\
 GEEGEDEG\
 EDC\
  AAGEGE\
@@ -73,9 +75,9 @@ DCDCa\
 AGDE E\
 DCCaa CD\
 EGEDCC\
-  EaaDC";
+  EaaDC";*/
 const float t_beats[]={  
-1,0.75,0.25,
+/*1,0.75,0.25,
 0.25,0.25,0.5,0.5,0.5,0.75,0.75,0.5,
 0.25,0.25,3.5,
 0.5,0.5,0.5,0.5,0.75,0.75,0.5,
@@ -92,7 +94,7 @@ const float t_beats[]={
 0.5,0.5,0.5,1.5,0.75,0.25,
 0.5,0.5,0.5,0.5,1,0.5,0.25,0.25,
 1.5,0.5,0.25,0.25,0.5,1,
-1,1,0.75,0.25,0.75,0.25,2};
+1,1,0.75,0.25,0.75,0.25,2*/};
 /*const char e_notes[]="FEDDCagEEEDC\ -- I believe I can fly
 C EEEDC\
 DCCC gEEEEEE\
